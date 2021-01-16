@@ -9,7 +9,6 @@ package com.udea.empleado.controller;
  *
  * @author Alejandro Rios
  */
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -33,58 +32,74 @@ import com.udea.empleado.dao.IPersonaDAO;
 @RestController
 @RequestMapping("/persona")
 @CrossOrigin("*")
-@Api(value="Employee Management System", description="Operations pertaining to employee in Person Management System")
+@Api(value = "Employee Management System", description = "Operations pertaining to employee in Person Management System")
 public class PersonaController {
 
-@Autowired
-PersonaService personService;
+    @Autowired
+    PersonaService personService;
 
-@ApiOperation(value = "Add a person")
-@PostMapping("/save")
-public long save(@ApiParam(value = "Employee object store in database table", required = true) @RequestBody Persona person){
-personService.save(person);
-return person.getIdPerson();
-}
+    @ApiOperation(value = "Add a person")
+    @PostMapping("/save")
+    public long save(@ApiParam(value = "Employee object store in database table", required = true) @RequestBody Persona person) {
+        personService.save(person);
+        return person.getIdPerson();
+    }
 
-@ApiOperation(value = "View a list of available persons", response = List.class)
-@ApiResponses(value = {
-@ApiResponse(code = 200, message = "Successfully retrieved list"),
-@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+    @ApiOperation(value = "View a list of available persons", response = List.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Successfully retrieved list")
+        ,
+@ApiResponse(code = 401, message = "You are not authorized to view the resource")
+        ,
+@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden")
+        ,
 @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
-})
-@GetMapping("/listAll")
-public Iterable<Persona> listAllPersons(){return personService.list();}
-@ApiOperation(value = "Get a person by Id")
-@GetMapping("/list/{id}")
-public Persona listPersonById(@ApiParam(value = "Employee id from which employee object wi ll retrieve", required = true) @PathVariable("id") int id){
-Optional<Persona> person= personService.listId(id);
-if(person.isPresent()){
-return person.get();
-}
-throw new ModelNotFoundException("ID de persona invalido");
-}
+    })
+    @GetMapping("/listAll")
+    public Iterable<Persona> listAllPersons() {
+        return personService.list();
+    }
 
-@ApiOperation(value = "Update a person")
-@PostMapping("/update")
-public long update(@ApiParam(value = "Employee object update in database table", required = true) @RequestBody Persona person){
-personService.update(person);
-return person.getIdPerson();
-}
+    @GetMapping("/increasesalary")
+    public Iterable<Persona> increasesalary() {
+        Iterable<Persona> persons = personService.list();
+        for (Persona p : persons) {
+            if (p.getYears() >= 2) {
+                p.setSalary(p.getSalary() * 1.1);
+                personService.update(p);
+            }
+        }
+        return personService.list();
+    }
 
+    @ApiOperation(value = "Get a person by Id")
+    @GetMapping("/list/{id}")
+    public Persona listPersonById(@ApiParam(value = "Employee id from which employee object wi ll retrieve", required = true) @PathVariable("id") int id) {
+        Optional<Persona> person = personService.listId(id);
+        if (person.isPresent()) {
+            return person.get();
+        }
+        throw new ModelNotFoundException("ID de persona invalido");
+    }
 
-@ApiOperation(value = "Delete a person by Id")
-@GetMapping("/delete/{id}")
-public Persona deletePersonById(@ApiParam(value = "Employee id from which employee object will be deleted", required = true) @PathVariable("id") int id){
-Optional<Persona> person= personService.listId(id);
+    @ApiOperation(value = "Update a person")
+    @PostMapping("/update")
+    public long update(@ApiParam(value = "Employee object update in database table", required = true) @RequestBody Persona person) {
+        personService.update(person);
+        return person.getIdPerson();
+    }
 
-if(person.isPresent()){
-personService.delete(person.get());
-return person.get();
-}
+    @ApiOperation(value = "Delete a person by Id")
+    @GetMapping("/delete/{id}")
+    public Persona deletePersonById(@ApiParam(value = "Employee id from which employee object will be deleted", required = true) @PathVariable("id") int id) {
+        Optional<Persona> person = personService.listId(id);
 
-throw new ModelNotFoundException("ID de persona inválido");
-}
+        if (person.isPresent()) {
+            personService.delete(person.get());
+            return person.get();
+        }
 
+        throw new ModelNotFoundException("ID de persona inválido");
+    }
 
 }
